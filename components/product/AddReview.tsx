@@ -4,15 +4,27 @@ import RatingSelect from "./Review/RatingSelect";
 
 import { useState } from "react";
 
-export default function Component() {
+import { createReview } from "@/lib/actions/reviews";
+
+export default function Component({ id }: { id: string }) {
   const [rating, setRating] = useState(0);
   const [name, setName] = useState("");
   const [review, setReview] = useState("");
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
 
-    console.log({ name, rating, review });
+    const success = await createReview({
+      name,
+      rating,
+      content: review,
+      productId: parseInt(id),
+    });
+    if (success) {
+      console.log("Review created successfully");
+    } else {
+      console.log("Failed to create review");
+    }
   };
   return (
     <section className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
@@ -20,10 +32,7 @@ export default function Component() {
         <h2 className="text-2xl font-bold mb-4">Add Review</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label
-              className="block font-medium text-gray-700 dark:text-gray-300"
-              htmlFor="name"
-            >
+            <label className="block font-medium text-gray-700 dark:text-gray-300" htmlFor="name">
               Name
             </label>
             <input
@@ -36,10 +45,7 @@ export default function Component() {
             />
           </div>
           <div>
-            <label
-              className="block font-medium text-gray-700 dark:text-gray-300"
-              htmlFor="rating"
-            >
+            <label className="block font-medium text-gray-700 dark:text-gray-300" htmlFor="rating">
               Rating
             </label>
             <div className="flex items-center">
@@ -47,10 +53,7 @@ export default function Component() {
             </div>
           </div>
           <div>
-            <label
-              className="block font-medium text-gray-700 dark:text-gray-300"
-              htmlFor="review"
-            >
+            <label className="block font-medium text-gray-700 dark:text-gray-300" htmlFor="review">
               Review
             </label>
             <textarea

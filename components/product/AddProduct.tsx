@@ -3,7 +3,8 @@
 import ImageSelect from "./ImageSelect";
 
 import { useState } from "react";
-import { PlusIcon } from "lucide-react";
+import { Image, Product, Review } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,30 +17,68 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { createProduct, updateProduct } from "@/lib/actions/products";
 
 export const revalidate = 1;
+
+export interface ProductEditProps extends Product {
+  id: number;
+  reviews: Review[];
+  images: Image[];
+}
 
 export default function AddProduct({
   edit,
   id,
+  product,
 }: {
   edit?: boolean;
   id?: string;
+  product?: ProductEditProps;
 }) {
   const title = edit ? "Edit Product " + id : "Add Product";
   const subText = edit
     ? "Update the details of your product here."
     : "Add a new product to your store.";
+  const router = useRouter();
+  const [images, setImages] = useState<string[]>(product?.images.map((i) => i.url) || []);
+  const [name, setName] = useState(product?.name || "");
+  const [price, setPrice] = useState(product?.price || 0);
+  const [description, setDescription] = useState(product?.description || "");
+  const [category, setCategory] = useState(product?.category || "electronics");
 
-  const [images, setImages] = useState<string[]>([]);
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState(0);
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("electronics");
-
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log({ name, category, images, description, price });
+    try {
+      if (edit && product) {
+        const updatedProduct = await updateProduct(product.id, {
+          name,
+          price,
+          description,
+          category,
+          images,
+        });
+        if (updatedProduct) {
+          // redirect the user back to the product page
+          router.push(`/product/view/${updatedProduct.id}`);
+        }
+      } else {
+        // else, create a new product
+        const newProduct = await createProduct({
+          name,
+          price,
+          description,
+          category,
+          images,
+        });
+        if (newProduct) {
+          router.push(`/product/view/${newProduct.id}`);
+        }
+      }
+    } catch (error) {
+      // show some toast or alert to the user
+      console.error("Error creating product:", error);
+    }
   };
 
   return (
@@ -62,10 +101,7 @@ export default function AddProduct({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="category">Category</Label>
-              <Select
-                onValueChange={(value) => setCategory(value)}
-                defaultValue={category}
-              >
+              <Select onValueChange={(value) => setCategory(value)} defaultValue={category}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -84,7 +120,8 @@ export default function AddProduct({
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
               id="price"
-              type="number"
+              type="text"
+              inputMode="numeric"
               placeholder="Price"
             />
           </div>

@@ -7,7 +7,8 @@ export default function ProductResult({ product }: { product: any }) {
     <div className="bg-white rounded-lg shadow-sm dark:bg-gray-950 overflow-hidden">
       <Link className="block" href={`/product/view/${product.id}`}>
         <img
-          src="https://dummyimage.com/600x520/000/fff"
+          // display product image
+          src={product.image}
           alt="product"
           className="w-full h-full object-cover"
         />
@@ -15,9 +16,7 @@ export default function ProductResult({ product }: { product: any }) {
           <h3 className="font-semibold text-lg">{product.name}</h3>
           <div className="flex items-center gap-1">
             <Stars rating={product.rating} />
-            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-              4.2
-            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">{product.rating}</span>
           </div>
         </div>
       </Link>
